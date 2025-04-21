@@ -9,9 +9,12 @@ from PIL import Image
 import uvicorn
 import shutil
 from typing import Optional
-
+import lamini
+from sentence_transformers import SentenceTransformer, util
 # Import the SD generation function
 from advance_wf import generate_sd_image
+import json
+from helper import generate_response , catterJson 
 
 app = FastAPI(title="Stable Diffusion Image Generation API")
 
@@ -81,12 +84,54 @@ async def generate_image(
         # Save the processed images
         pil_image.save(image_path)
         pil_mask.save(mask_path)
-        
+        design_prompt = """
+<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+You are an expert prompt engineer for SDXL models. Create detailed character/art descriptions following these rules:
+1. Focus on specified locations/regions (e.g., "dragon embroidery on shirt collar")
+2. Use comma-separated tags with **specificity** [[3]][[9]]
+3. Include clothing/material details as storytelling tools [[3]]
+4. Add environmental context matching the style [[2]]
+5. Return ONLY valid JSON with these fields:
+   - Character: Name/type
+   - Location: Detailed environment
+   - Clothing: "Region:detail, Region:pattern" format
+   - Tags: Comma-separated CSS/HTML-style tags [[4]][[8]]
+   - Mood: Artistic style descriptor
+   - Key_Elements: Story-relevant features [[6]]
+
+Example:
+{{
+  "Character": "Cyberpunk Samurai",
+  "Location": "Neon-lit Tokyo alleyway",
+  "Clothing": "Chest: glowing circuitry, Sleeves: reactive nano-fabric",
+  "Tags": ["samurai_helmet:ridged", "jacket_material:carbon_fiber", "background:rainy_cityscape"],
+  "Mood": "Dynamic cyberpunk realism",
+  "Key_Elements": ["Damascus steel katana", "Holographic interface on wrist"]
+}}"""
+
+        dis  = f"""User request:
+<|start_Request|>
+{prompt}
+<|end_Request|>
+<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+""" 
+        design_prompt = design_prompt+ dis
+
+        rep = generate_response(design_prompt)
+        data = "Empty"
+        while True:
+            try:
+                data = json.loads(rep)
+                break
+    # Process for SDXL input
+            except:
+                rep = catterjson(rep)
         # Run the generation function
+        print(data)
         result_image = generate_sd_image(
             checkpoint_name=checkpoint_name,
             lora_name=lora_name,
-            prompt=prompt,
+            prompt=design_prompt,
             negative_prompt=negative_prompt,
             width=width,
             height=height,
