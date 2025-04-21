@@ -63,7 +63,8 @@ Add before/after results in this section (drag and drop or insert markdown image
 
 | Before | After |
 |--------|-------|
-| ![](examples/before1.png) | ![](examples/after1.png) |
+| ![](examples/before1.jpg) | ![](examples/after1.jpg) |
+| ![](examples/before2.jpg) | ![](examples/after2.jpg) |
 
 
 ---
