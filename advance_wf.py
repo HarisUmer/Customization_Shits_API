@@ -363,7 +363,7 @@ def save_image(image, output_path):
 
 def generate_sd_image(
     checkpoint_name,
-    lora_name,
+    lora_names,
     prompt,
     negative_prompt,
     width, 
@@ -386,21 +386,22 @@ def generate_sd_image(
     try:
         # load base SDXL model
         model, clip, vae = setup_model_and_load_checkpoint(checkpoint_name)
-        lora_path = folder_paths.get_full_path("loras", lora_name)
-        if lora_path:
-            model_lora, clip_lora = load_lora(model, clip, lora_name, 0.7, 0.7)
-
-            # load the image and its mask
-            src = image_dir
-            msk = mask_dir  # provide your b&w mask here
+        for lora_name in lora_names:
+            lora_path = folder_paths.get_full_path("loras", lora_name)
+            if lora_path:
+                model, clip = load_lora(model, clip, lora_name, 0.7, 0.7)
+            else:
+                print(f"Skipping: LoRA {lora_name} not found")
+        src = image_dir
+        msk = mask_dir  # provide your b&w mask here
 
             # prepare the latent+noise_mask
-            latent_dict = prepare_masked_latent(vae, src, msk, grow_mask_by=6)
+        latent_dict = prepare_masked_latent(vae, src, msk, grow_mask_by=6)
 
             # generate with the masked latent
-            img2 = generate_image_from_latent(
-                model=model_lora,
-                clip=clip_lora,
+        img2 = generate_image_from_latent(
+                model=model,
+                clip=clip,
                 vae=vae,
                 prompt=prompt + ", detailed",
                 negative_prompt=negative_prompt,
@@ -411,14 +412,8 @@ def generate_sd_image(
                 scheduler=scheduler,
                 seed=seed
             )
-            save_image(img2,output_dir)
-            return img2
-            
-        else:
-            print(f"Skipping Example 2: LoRA {lora_name} not found")
-
-        print("\nAll examples completed successfully!")
-
+        save_image(img2,output_dir)
+        return img2
     except Exception as e:
         print(f"Error: {e}")
         traceback.print_exc()
