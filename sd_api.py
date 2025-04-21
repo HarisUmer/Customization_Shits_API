@@ -45,9 +45,8 @@ async def generate_image(
     image: UploadFile = File(...),
     mask: UploadFile = File(...),
     prompt: str = Form(...),
-    negative_prompt: str = Form("ugly, deformed, disfigured, poor quality, low quality"),
     checkpoint_name: str = Form(r"\\SDXL-TURBO\\animexlXuebimix_v60LCM.safetensors"),
-    lora_name: str = Form(r"\\SDXL\\Abstract\\logomkrdsxl.safetensors"),
+    negative_prompt: str = Form("ugly, deformed, disfigured, poor quality, low quality"),
     width: int = Form(1080),
     height: int = Form(1080),
     steps: int = Form(30),
@@ -64,6 +63,8 @@ async def generate_image(
     - Get back the generated image
     """
     try:
+        
+        lora_name = [r"\\SDXL\\Abstract\\logomkrdsxl.safetensors", r"\\SDXL\\Abstract\\hud_m4x_4bstr4ct_styl_XLP.safetensors"]
         # Generate unique filenames
         image_id = str(uuid.uuid4())
         image_path = f"temp/{image_id}_image.png"
@@ -130,7 +131,7 @@ Example:
         print(data)
         result_image = generate_sd_image(
             checkpoint_name=checkpoint_name,
-            lora_name=lora_name,
+            lora_names=lora_name,
             prompt=design_prompt,
             negative_prompt=negative_prompt,
             width=width,
