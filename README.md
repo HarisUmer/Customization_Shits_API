@@ -71,6 +71,7 @@ Add before/after results in this section (drag and drop or insert markdown image
 
 ## ⚙️ Setup Instructions
 
+Clone ComfyUI repo and Add the path to it in advance_wf.py Also the model You want to use add them in ComfyUI models directory as well 
 1. **Clone this repository**
 
 ```bash
